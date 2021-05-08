@@ -47,7 +47,7 @@ enum TxnErrorTypes {
 }
 
 const myTableStyle = {
-  border:"2px solid grey",
+  border:"1px solid grey",
   "marginLeft": "auto",
   "marginRight": "auto"
 } as React.CSSProperties;
