@@ -160,12 +160,12 @@ class App extends Component<IProps, IState> {
           <div hidden={this.domWallet.Wallet.SlpCoins.size === 0}>
             <strong>Balances:</strong><br/>
             <table style={myTableStyle}>
-              <thead><tr><th>name</th><th>amount</th></tr></thead>
+              <thead><tr><th>name</th><th>amount</th><th>type</th></tr></thead>
               <tbody>
-                <tr key="bch-bal"><td>BCH</td><td>{this.domWallet.Wallet.GetBchBalance().div(10**8).toFixed(8)}</td></tr>
+                <tr key="bch-bal"><td>BCH</td><td>{this.domWallet.Wallet.GetBchBalance().div(10**8).toFixed(8)}</td><td>&nbsp;</td></tr>
               {
                 Array.from(this.domWallet.Wallet.GetSlpBalances()).map(b => {
-                  return (<tr key={`${b[0]}-bal`}><td>{this.getTokenName(b[0])}</td><td>{this.getSlpAmountString(b[1], b[0])}</td></tr>);
+                  return (<tr key={`${b[0]}-bal`}><td>{this.getTokenName(b[0])}</td><td>{this.getSlpAmountString(b[1], b[0])}</td><td>{this.getTokenTypeString(b[0])}</td></tr>);
                 })
               }
               </tbody>
