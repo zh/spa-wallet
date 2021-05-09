@@ -54,7 +54,9 @@ const myTableStyle = {
 
 const publicBchdNodes = [
   'bchd.fountainhead.cash',
-  'bchd.ny1.simpleledger.io',
+  'bchd-mainnet.electroncash.de',
+  'bchd.imaginary.cash/proxy',
+  'bchd.greyh.at:8335',
   'localhost:8335'
 ]
 
