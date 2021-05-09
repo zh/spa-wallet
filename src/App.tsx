@@ -144,10 +144,12 @@ class App extends Component<IProps, IState> {
           {/* Display address */}
           <div>
             <strong>Your wallet address:</strong><br/><br/>
-            <QRCode value={this.state.address!} /><br/><br/>
-            <div className="App-qr-text" onClick={this.copyToClipboard}>{this.state.address!}</div>
-            {this.state.showCopySuccess && <div className="App-qr-success"> (copied!) </div>}
-            <br/><br/>
+            <div onClick={this.copyToClipboard}>
+              <QRCode value={this.state.address!} /><br/><br/>
+              <div className="App-qr-text">{this.state.address!}</div>
+              {this.state.showCopySuccess && <div className="App-qr-success"> (copied!) </div>}
+            </div>
+            <br/>
             <button
             onClick={this.toggleAddrFormat}
             >
@@ -185,7 +187,7 @@ class App extends Component<IProps, IState> {
           </div>
           <div hidden={!this.state.showCoins}>
             <table style={myTableStyle}>
-              <thead><tr><th>UTXO</th><th>Value</th><th>Name</th><th>Type</th></tr></thead>
+              <thead><tr><th>UTXO</th><th>Amount</th><th>Name</th><th>Type</th></tr></thead>
               <tbody>
                 {Array.from(this.domWallet.Wallet.BchCoins).map(c => {
                   return (<tr key={c[0]}><td>{Utils.keyToOutpointString(c[0])}</td><td>{c[1].satoshis.div(10**8).toFixed(8)}</td><td>BCH</td></tr>);
@@ -291,9 +293,8 @@ class App extends Component<IProps, IState> {
   }
 
   public copyToClipboard = (event: React.MouseEvent<HTMLDivElement>) => {
-    const qrCode = event.target as HTMLDivElement;
     event.preventDefault();
-    navigator.clipboard.writeText(qrCode.textContent!);
+    navigator.clipboard.writeText(this.state.address!);
     this.setState({ showCopySuccess: true });
   };
 
