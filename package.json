@@ -2,7 +2,7 @@
   "name": "spa-wallet",
   "version": "0.2.1",
   "private": true,
-  "homepage": "http://zh.thedev.id/spa-wallet/",
+  "homepage": ".",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
