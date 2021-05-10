@@ -4,7 +4,7 @@ import * as bip39 from "bip39";
 import { Address, PrivateKey, Transaction as Txn } from "bitcore-lib-cash";
 import { TokenMetadata, Transaction } from "grpc-bchrpc-web";
 
-import { App, Outpoint, TokenId, WalletStorage } from "./Interfaces";
+import { Outpoint, TokenId, WalletStorage } from "./Interfaces";
 import { CacheSet } from "../CacheSet";
 import { BchdNetwork } from "./Network/BchdNetwork";
 import Utils from "./Utils";
@@ -35,7 +35,7 @@ export class Wallet {
 
   private storage: WalletStorage;
   private network: BchdNetwork;
-  private parent?: App;
+  private update?: { ():void };
   private mnemonic?: string;
   private privateKey: PrivateKey;
 
@@ -54,10 +54,10 @@ export class Wallet {
 
   private tokenMetadata = new Map<TokenId, TokenMetadata>();
 
-  constructor(storage: WalletStorage, network: BchdNetwork, parent?: App) { // bankPermissions: bank[]) {
+  constructor(storage: WalletStorage, network: BchdNetwork, update: { ():void } = () =>{}) { // bankPermissions: bank[]) {
     this.storage = storage;
     this.network = network;
-    this.parent = parent;
+    this.update = update;
     
     // check for wif first
     if (this.storage.GetWif()) {
@@ -233,8 +233,8 @@ export class Wallet {
   }
 
   private updateParent = () => {
-    if (this.parent) {
-      this.parent.UpdateWalletUI();
+    if (this.update) {
+      this.update();
     }
   }
 
@@ -243,6 +243,7 @@ export class Wallet {
       this.processNewTransaction(txn);
     };
     this.network.Subscribe([this.Address.toCashAddress()], cb);
+    this.updateParent();
   }
 
   private async processNewTransaction(txn: Transaction) {

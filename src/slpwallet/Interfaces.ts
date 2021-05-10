@@ -1,8 +1,3 @@
-export interface App {
-    UpdateWalletUI: () => any;  // wallet will call this when UI updates are needed
-                                // wallet will call this to display a message for the user
-}
-
 export interface WalletStorage {
     GetSeed(): string|null;
     SetSeed(seed: string): void;

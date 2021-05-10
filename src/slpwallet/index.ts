@@ -1,4 +1,4 @@
-import { App, WalletStorage } from "./Interfaces";
+import { WalletStorage } from "./Interfaces";
 import { Wallet } from "./Wallet";
 import { BrowserLocalStorage } from "./Storage/BrowserStorage";
 import { BchdNetwork } from "./Network/BchdNetwork";
@@ -13,7 +13,7 @@ export class DomWallet {
     public Wallet: Wallet;
     public Storage = new BrowserLocalStorage();
 
-    constructor(app: App, storage?: WalletStorage, network?: BchdNetwork) {
+    constructor(update: { (): void }, storage?: WalletStorage, network?: BchdNetwork) {
         if (window === undefined) {
             throw Error("access to 'window' is not available.");
         }
@@ -23,7 +23,7 @@ export class DomWallet {
         if (network) {
             this.Network = network;
         }
-        this.Wallet = new Wallet(this.Storage, this.Network, app);
+        this.Wallet = new Wallet(this.Storage, this.Network, update);
     }
 
     public setNode(node: string) {
