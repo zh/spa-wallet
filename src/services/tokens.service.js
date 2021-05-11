@@ -111,6 +111,31 @@ const getSlpAmountString = (wallet, amount, tokenId) => {
   return amount.div(10 ** decimals).toFixed();
 };
 
+// use with NFTs only
+const metaToObj = (wallet, tokenId) => {
+  const tokenType = getTypeString(wallet, tokenId);
+  const obj = {
+    id: tokenId,
+    type: tokenType,
+    name: getName(wallet, tokenId),
+    ticker: getTicker(wallet, tokenId),
+  };
+  if (tokenType.startsWith('NFT')) {
+    const tm = wallet.TokenMetadata.get(tokenId);
+    if (tm.hasNft1Group()) {
+      const uri = tm.getNft1Group().getTokenDocumentUrl();
+      obj.uri = uri ? Buffer.from(uri).toString('utf8') : '';
+    } else if (tm.hasNft1Child()) {
+      const uri = tm.getNft1Child().getTokenDocumentUrl();
+      obj.uri = uri ? Buffer.from(uri).toString('utf8') : '';
+      obj.parentId = Buffer.from(tm.getNft1Child().getGroupId()).toString(
+        'hex'
+      );
+    }
+  }
+  return obj;
+};
+
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
   getName,
@@ -118,4 +143,5 @@ export default {
   getTicker,
   getTypeString,
   getSlpAmountString,
+  metaToObj,
 };

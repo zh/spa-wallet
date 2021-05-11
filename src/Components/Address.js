@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import QRCode from 'qrcode.react';
 import bchaddr from 'bchaddrjs-slp';

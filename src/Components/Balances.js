@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { CustomDialog } from 'react-st-modal';
 import { Big } from 'big.js';
 import { makeStyles } from '@material-ui/core/styles';
 import Utils from '../slpwallet/Utils';
 import Tokens from '../services/tokens.service';
+import NftInfoModal from './NftInfoModal';
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -34,12 +36,21 @@ const Balances = (props) => {
   if (!domWallet) {
     return;
   }
+  const wallet = domWallet.Wallet;
 
   const toggleUtxo = () => {
     setShowUtxo(!showUtxo);
   };
 
-  const wallet = domWallet.Wallet;
+  const slpInfo = async (tokenId, amount) => {
+    await CustomDialog(
+      <NftInfoModal wallet={wallet} tokenId={tokenId} amount={amount} />,
+      {
+        title: `Token: ${tokenId}`,
+        showCloseIcon: true,
+      }
+    );
+  };
 
   return (
     <>
@@ -74,7 +85,10 @@ const Balances = (props) => {
               {Array.from(wallet.GetSlpBalances()).map((b) => {
                 if (Big(b[1]).toFixed() > 0) {
                   return (
-                    <tr key={`${b[0]}-bal`}>
+                    <tr
+                      key={`${b[0]}-bal`}
+                      onClick={async () => slpInfo(b[0], Big(b[1]).toFixed())}
+                    >
                       <td className={classes.td}>
                         {Tokens.getTicker(wallet, b[0])}
                       </td>

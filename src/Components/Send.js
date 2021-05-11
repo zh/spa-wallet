@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Confirm, Alert } from 'react-st-modal'; // TODO: replace with material-ui
 import { makeStyles } from '@material-ui/core/styles';
 import { Big } from 'big.js';
@@ -319,7 +319,6 @@ const Send = (props) => {
             href={`${explorerUri}${txid}`}
             target="_blank"
             rel="noopener noreferrer"
-            download
           >
             {txid}
           </a>,
@@ -365,12 +364,16 @@ const Send = (props) => {
           value={selectedSlpTokenId}
           onChange={updateSelectedToken}
         >
-          {Array.from(wallet.SlpCoins).map(([tokenId, _]) => (
-            <option key={tokenId} value={tokenId}>{`SLP -> ${Tokens.getName(
-              wallet,
-              tokenId
-            )} (${Tokens.getTypeString(wallet, tokenId)})`}</option>
-          ))}
+          {Array.from(wallet.GetSlpBalances()).map((b) => {
+            if (Big(b[1]).toFixed() > 0) {
+              return (
+                <option key={b[0]} value={b[0]}>{`SLP -> ${Tokens.getName(
+                  wallet,
+                  b[0]
+                )} (${Tokens.getTypeString(wallet, b[0])})`}</option>
+              );
+            }
+          })}
           <option key="bch" value="bch">
             Bitcoin Cash
           </option>

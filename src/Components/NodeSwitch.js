@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const publicBchdNodes = [
   'bchd.fountainhead.cash',
