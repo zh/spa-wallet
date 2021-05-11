@@ -9,6 +9,20 @@ const useStyles = makeStyles((theme) => ({
     border: '1px solid grey',
     marginLeft: 'auto',
     marginRight: 'auto',
+    borderSpacing: '0px',
+  },
+  th: {
+    borderRight: '1px solid grey',
+    borderBottom: '1px solid grey',
+  },
+  td: {
+    borderRight: '1px solid grey',
+    padding: '2px',
+    textAlign: 'left',
+  },
+  tdNum: {
+    borderRight: '1px solid grey',
+    textAlign: 'right',
   },
 }));
 
@@ -39,32 +53,40 @@ const Balances = (props) => {
           <table className={classes.table}>
             <thead>
               <tr>
-                <th>ticker</th>
-                <th>name</th>
-                <th>amount</th>
-                <th>type</th>
+                <th className={classes.th}>ticker</th>
+                <th className={classes.th}>name</th>
+                <th className={classes.th}>amount</th>
+                <th className={classes.th}>type</th>
               </tr>
             </thead>
             <tbody>
               <tr key="bch-bal">
-                <td>BCH</td>
-                <td>BCH</td>
-                <td>
+                <td className={classes.td}>BCH</td>
+                <td className={classes.td}>BCH</td>
+                <td className={classes.tdNum}>
                   {wallet
                     .GetBchBalance()
                     .div(10 ** 8)
                     .toFixed(8)}
                 </td>
-                <td>&nbsp;</td>
+                <td className={classes.td}>&nbsp;</td>
               </tr>
               {Array.from(wallet.GetSlpBalances()).map((b) => {
                 if (Big(b[1]).toFixed() > 0) {
                   return (
                     <tr key={`${b[0]}-bal`}>
-                      <td>{Tokens.getTicker(wallet, b[0])}</td>
-                      <td>{Tokens.getName(wallet, b[0])}</td>
-                      <td>{Tokens.getSlpAmountString(wallet, b[1], b[0])}</td>
-                      <td>{Tokens.getTypeString(wallet, b[0])}</td>
+                      <td className={classes.td}>
+                        {Tokens.getTicker(wallet, b[0])}
+                      </td>
+                      <td className={classes.td}>
+                        {Tokens.getName(wallet, b[0])}
+                      </td>
+                      <td className={classes.tdNum}>
+                        {Tokens.getSlpAmountString(wallet, b[1], b[0])}
+                      </td>
+                      <td className={classes.td}>
+                        {Tokens.getTypeString(wallet, b[0])}
+                      </td>
                     </tr>
                   );
                 }
@@ -84,19 +106,24 @@ const Balances = (props) => {
             <table className={classes.table}>
               <thead>
                 <tr>
-                  <th>UTXO</th>
-                  <th>Amount</th>
-                  <th>Name</th>
-                  <th>Type</th>
+                  <th className={classes.th}>UTXO</th>
+                  <th className={classes.th}>Amount</th>
+                  <th className={classes.th}>Name</th>
+                  <th className={classes.th}>Type</th>
                 </tr>
               </thead>
               <tbody>
                 {Array.from(wallet.BchCoins).map((c) => {
                   return (
                     <tr key={c[0]}>
-                      <td>{Utils.keyToOutpointString(c[0])}</td>
-                      <td>{c[1].satoshis.div(10 ** 8).toFixed(8)}</td>
-                      <td>BCH</td>
+                      <td className={classes.td}>
+                        {Utils.keyToOutpointString(c[0])}
+                      </td>
+                      <td className={classes.tdNum}>
+                        {c[1].satoshis.div(10 ** 8).toFixed(8)}
+                      </td>
+                      <td className={classes.td}>BCH</td>
+                      <td className={classes.td}>BCH</td>
                     </tr>
                   );
                 })}
@@ -105,16 +132,22 @@ const Balances = (props) => {
                     if (Big(c[1].amount).toFixed() > 0) {
                       return (
                         <tr key={c[0]}>
-                          <td>{Utils.keyToOutpointString(c[0])}</td>
-                          <td>
+                          <td className={classes.td}>
+                            {Utils.keyToOutpointString(c[0])}
+                          </td>
+                          <td className={classes.tdNum}>
                             {Tokens.getSlpAmountString(
                               wallet,
                               c[1].amount,
                               tokenId
                             )}
                           </td>
-                          <td>{Tokens.getName(wallet, tokenId)}</td>
-                          <td>{Tokens.getTypeString(wallet, tokenId)}</td>
+                          <td className={classes.td}>
+                            {Tokens.getName(wallet, tokenId)}
+                          </td>
+                          <td className={classes.td}>
+                            {Tokens.getTypeString(wallet, tokenId)}
+                          </td>
                         </tr>
                       );
                     }

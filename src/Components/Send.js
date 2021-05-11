@@ -4,15 +4,30 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Big } from 'big.js';
 import bchaddr from 'bchaddrjs-slp';
 import { Address } from 'bitcore-lib-cash';
-import Utils from '../slpwallet/Utils';
 import { DUST_LIMIT, TxBuilder } from '../slpwallet/TxBuilder';
 import Tokens from '../services/tokens.service';
+import TransactionIO from './Send/TransactionsIO';
 
 const useStyles = makeStyles((theme) => ({
+  errorTable: {
+    border: '0px',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  },
+  errorTd: {
+    color: '#bb0000',
+    textAlign: 'center',
+  },
   table: {
     border: '1px solid grey',
     marginLeft: 'auto',
     marginRight: 'auto',
+    borderSpacing: '0px',
+  },
+  td: {
+    borderRight: '1px solid grey',
+    padding: '3px',
+    textAlign: 'left',
   },
   payto: {
     width: '380px',
@@ -42,120 +57,18 @@ const ValidationErrorsList = (props) => {
       <br />
       <strong>Validation Errors</strong>
       <br />
-      <table className={classes.table}>
+      <table className={classes.errorTable}>
         <tbody>
           {Array.from(errorsList).map((err, i) => {
             return (
               <tr key={i}>
-                <td>{err}</td>
+                <td className={classes.errorTd}>{err}</td>
               </tr>
             );
           })}
         </tbody>
       </table>
     </div>
-  );
-};
-
-const TransactionIOs = (props) => {
-  const { wallet, currentTxn } = props;
-  const classes = useStyles();
-
-  const [showTxnIO, setShowTxnIO] = useState(false);
-
-  const toggleTxnIO = () => {
-    setShowTxnIO(!showTxnIO);
-  };
-
-  return (
-    <>
-      <div hidden={currentTxn.Inputs.length === 0}>
-        <button onClick={toggleTxnIO}>
-          {showTxnIO ? 'Hide' : 'Show'} Transaction I/O
-        </button>
-      </div>
-      <div hidden={!showTxnIO}>
-        <div hidden={currentTxn.Inputs.length === 0}>
-          <strong>Txn Inputs:</strong>
-          <br />
-          <table className={classes.table}>
-            <tbody>
-              {Array.from(currentTxn.Inputs).map((input, i) => {
-                const outpoint = Utils.outpointToKey(
-                  input.prevTxId,
-                  input.outputIndex,
-                  true
-                );
-                const slpOut = wallet.SlpOutpointCache.get(outpoint);
-                if (slpOut) {
-                  return (
-                    <tr key={i}>
-                      <td>{`${input.prevTxId.toString('hex')}:${
-                        input.outputIndex
-                      }, ${Tokens.getSlpAmountString(
-                        wallet,
-                        slpOut.amount,
-                        slpOut.tokenId
-                      )} ${Tokens.getTicker(wallet, slpOut.tokenId)}, ${
-                        slpOut.satoshis
-                      } sats`}</td>
-                    </tr>
-                  );
-                }
-                return (
-                  <tr key={i}>
-                    <td>{`${input.prevTxId.toString('hex')}:${
-                      input.outputIndex
-                    }, ${input.output ? input.output.satoshis : '?'} sats`}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          <div hidden={currentTxn.Inputs.length === 0}>
-            <strong>Txn Outputs:</strong>
-            <br />
-            <table className={classes.table}>
-              <tbody>
-                {Array.from(currentTxn.Outputs).map((output, i) => {
-                  if (output[0].script.isDataOut()) {
-                    return (
-                      <tr key={i}>
-                        <td>{`SLP Metadata message, ${
-                          output[0].script.toBuffer().length
-                        } bytes, ${output[0].satoshis} sats`}</td>
-                      </tr>
-                    );
-                  }
-                  let slpOuts = currentTxn.SlpOutputs;
-                  if (slpOuts.length > 0 && i <= slpOuts.length) {
-                    return (
-                      <tr key={i}>
-                        <td>{`${output[0].script
-                          .toAddress()
-                          .toCashAddress()}, ${Tokens.getSlpAmountString(
-                          wallet,
-                          slpOuts[i - 1]
-                        )} ${Tokens.getTicker(wallet)}, ${
-                          output[0].satoshis
-                        } sats`}</td>
-                      </tr>
-                    );
-                  }
-                  return (
-                    <tr key={i}>
-                      <td>{`${output[0].script.toAddress().toCashAddress()}, ${
-                        output[0].satoshis
-                      } sats`}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </>
   );
 };
 
@@ -481,7 +394,7 @@ const Send = (props) => {
         <ValidationErrorsList errorsList={txnValidationErrors} />
         <br />
         {currentTxn && txnValidationErrors.size === 0 && (
-          <TransactionIOs wallet={wallet} currentTxn={currentTxn} />
+          <TransactionIO txn={currentTxn} wallet={wallet} />
         )}
       </div>
       <br />
