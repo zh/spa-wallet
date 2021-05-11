@@ -43,6 +43,7 @@ const Home = () => {
   return (
     <Container className={classes.root} maxWidth="md">
       <Header />
+      <br />
       {!domWallet || loading ? (
         <CircularProgress />
       ) : (

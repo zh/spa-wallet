@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Big } from 'big.js';
 import { makeStyles } from '@material-ui/core/styles';
 import Utils from '../slpwallet/Utils';
 import Tokens from '../services/tokens.service';
@@ -57,14 +58,16 @@ const Balances = (props) => {
                 <td>&nbsp;</td>
               </tr>
               {Array.from(wallet.GetSlpBalances()).map((b) => {
-                return (
-                  <tr key={`${b[0]}-bal`}>
-                    <td>{Tokens.getTicker(wallet, b[0])}</td>
-                    <td>{Tokens.getName(wallet, b[0])}</td>
-                    <td>{Tokens.getSlpAmountString(wallet, b[1], b[0])}</td>
-                    <td>{Tokens.getTypeString(wallet, b[0])}</td>
-                  </tr>
-                );
+                if (Big(b[1]).toFixed() > 0) {
+                  return (
+                    <tr key={`${b[0]}-bal`}>
+                      <td>{Tokens.getTicker(wallet, b[0])}</td>
+                      <td>{Tokens.getName(wallet, b[0])}</td>
+                      <td>{Tokens.getSlpAmountString(wallet, b[1], b[0])}</td>
+                      <td>{Tokens.getTypeString(wallet, b[0])}</td>
+                    </tr>
+                  );
+                }
               })}
             </tbody>
           </table>
@@ -99,20 +102,22 @@ const Balances = (props) => {
                 })}
                 {Array.from(wallet.SlpCoins).map(([tokenId, coins]) => {
                   return Array.from(coins).map((c) => {
-                    return (
-                      <tr key={c[0]}>
-                        <td>{Utils.keyToOutpointString(c[0])}</td>
-                        <td>
-                          {Tokens.getSlpAmountString(
-                            wallet,
-                            c[1].amount,
-                            tokenId
-                          )}
-                        </td>
-                        <td>{Tokens.getName(wallet, tokenId)}</td>
-                        <td>{Tokens.getTypeString(wallet, tokenId)}</td>
-                      </tr>
-                    );
+                    if (Big(c[1].amount).toFixed() > 0) {
+                      return (
+                        <tr key={c[0]}>
+                          <td>{Utils.keyToOutpointString(c[0])}</td>
+                          <td>
+                            {Tokens.getSlpAmountString(
+                              wallet,
+                              c[1].amount,
+                              tokenId
+                            )}
+                          </td>
+                          <td>{Tokens.getName(wallet, tokenId)}</td>
+                          <td>{Tokens.getTypeString(wallet, tokenId)}</td>
+                        </tr>
+                      );
+                    }
                   });
                 })}
               </tbody>
