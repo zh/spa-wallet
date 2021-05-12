@@ -1,10 +1,10 @@
+import { makeStyles } from '@material-ui/core/styles';
 import {
   ModalContent,
   ModalFooter,
   ModalButton,
   useDialog,
 } from 'react-st-modal';
-import { makeStyles } from '@material-ui/core/styles';
 import Tokens from '../services/tokens.service';
 
 const explorerUri = 'https://simpleledger.info/token/';
