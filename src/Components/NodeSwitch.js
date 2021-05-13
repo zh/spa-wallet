@@ -9,7 +9,7 @@ const publicBchdNodes = [
 ];
 
 const NodeSwitch = (props) => {
-  const { domWallet, updateFunc } = props;
+  const { domWallet } = props;
   const [nodeUri, setNodeUri] = useState(publicBchdNodes[0]);
 
   const updateNodeUri = (event) => {
@@ -37,10 +37,6 @@ const NodeSwitch = (props) => {
           </option>
         ))}
       </select>
-      <button onClick={updateFunc}>
-        <i className="fa fa-refresh"></i>
-        &nbsp;Refresh
-      </button>
     </div>
   );
 };

@@ -74,7 +74,7 @@ const ValidationErrorsList = (props) => {
 
 const Send = (props) => {
   const classes = useStyles();
-  const { domWallet, updateFunc } = props;
+  const { domWallet, updateFunc, advanced } = props;
   const txBuilder = domWallet ? new TxBuilder(domWallet.Wallet) : null;
 
   const [selectedSlpTokenId, setSelectedSlpTokenId] = useState('bch');
@@ -391,24 +391,31 @@ const Send = (props) => {
         <button onClick={setMaxAmount}>Max</button>
         <br />
         <br />
-        <button onClick={addOutput}>Add Output</button>&nbsp;&nbsp;
+        {currentTxn && txnValidationErrors.size === 0 && (
+          <button onClick={addOutput}>Confirm</button>
+        )}
+        &nbsp;&nbsp;
         <button onClick={clearTransaction}>Clear</button>
         <br />
         <ValidationErrorsList errorsList={txnValidationErrors} />
         <br />
-        {currentTxn && txnValidationErrors.size === 0 && (
-          <TransactionIO txn={currentTxn} wallet={wallet} />
+        {advanced && currentTxn && txnValidationErrors.size === 0 && (
+          <>
+            <TransactionIO txn={currentTxn} wallet={wallet} />
+            <br />
+          </>
         )}
       </div>
-      <br />
-      <div
-        hidden={
+      <button
+        disabled={
           (currentTxn && currentTxn.Outputs.length === 0) ||
           (txnValidationErrors && txnValidationErrors.size !== 0)
         }
+        onClick={sendTransaction}
       >
-        <button onClick={sendTransaction}>Send</button>
-      </div>
+        Send
+      </button>
+      <br />
     </>
   );
 };

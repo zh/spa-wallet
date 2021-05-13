@@ -4,32 +4,20 @@ import Outputs from './Outputs';
 
 const TransactionIO = (props) => {
   const { wallet, txn } = props;
-  const [showTxnIO, setShowTxnIO] = useState(false);
-
-  const toggleTxnIO = () => {
-    setShowTxnIO(!showTxnIO);
-  };
 
   return (
-    <>
+    <div>
       <div hidden={txn.Inputs.length === 0}>
-        <button onClick={toggleTxnIO}>
-          {showTxnIO ? 'Hide' : 'Show'} Transaction I/O
-        </button>
-      </div>
-      <div hidden={!showTxnIO}>
+        <strong>Txn Inputs:</strong>
+        <br />
+        <Inputs txn={txn} wallet={wallet} />
         <div hidden={txn.Inputs.length === 0}>
-          <strong>Txn Inputs:</strong>
+          <strong>Txn Outputs:</strong>
           <br />
-          <Inputs txn={txn} wallet={wallet} />
-          <div hidden={txn.Inputs.length === 0}>
-            <strong>Txn Outputs:</strong>
-            <br />
-            <Outputs txn={txn} wallet={wallet} />
-          </div>
+          <Outputs txn={txn} wallet={wallet} />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -8,6 +8,7 @@ import NodeSwitch from './Components/NodeSwitch';
 import Address from './Components/Address';
 import Balances from './Components/Balances';
 import Send from './Components/Send';
+import ModeSwitch from './Components/ModeSwitch.js';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -16,6 +17,11 @@ const useStyles = makeStyles((theme) => ({
   },
   privateKeys: {
     width: '410px',
+  },
+  buttonWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 }));
 
@@ -30,6 +36,7 @@ const App = () => {
 
   const classes = useStyles();
   const [loading, setLoading] = useState(false);
+  const [advanced, setAdvanced] = useState(false);
 
   const domWallet = useMemo(() => {
     setLoading(true);
@@ -44,19 +51,36 @@ const App = () => {
     <Container className={classes.root} maxWidth="md">
       <Header />
       <br />
+      <div className={classes.buttonWrapper}>
+        <ModeSwitch
+          checked={advanced}
+          onChange={() => setAdvanced(!advanced)}
+        />
+        <button onClick={forceUpdate}>
+          <i className="fa fa-refresh"></i>
+          &nbsp;Refresh
+        </button>
+      </div>
+      <hr />
       {!domWallet || loading ? (
         <CircularProgress />
       ) : (
         <>
-          <NodeSwitch domWallet={domWallet} updateFunc={forceUpdate} />
+          {advanced && (
+            <NodeSwitch domWallet={domWallet} updateFunc={forceUpdate} />
+          )}
           <br />
           <Address domWallet={domWallet} updateFunc={forceUpdate} />
           <hr />
-          <Balances domWallet={domWallet} />
+          <Balances domWallet={domWallet} advanced={advanced} />
           <hr />
         </>
       )}
-      <Send domWallet={domWallet} updateFunc={forceUpdate} />
+      <Send
+        domWallet={domWallet}
+        updateFunc={forceUpdate}
+        advanced={advanced}
+      />
       <br />
       <Footer />
     </Container>

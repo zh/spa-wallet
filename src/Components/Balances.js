@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Balances = (props) => {
-  const { domWallet } = props;
+  const { domWallet, advanced } = props;
   const classes = useStyles();
   const [showUtxo, setShowUtxo] = useState(false);
 
@@ -108,68 +108,74 @@ const Balances = (props) => {
             </tbody>
           </table>
           <br />
-          <div
-            hidden={wallet.BchCoins.size === 0 && wallet.SlpCoins.size === 0}
-          >
-            <button onClick={toggleUtxo}>
-              {showUtxo ? 'Hide' : 'Show'} UTXOs List
-            </button>
-          </div>
-          <br />
-          <div hidden={!showUtxo}>
-            <table className={classes.table}>
-              <thead>
-                <tr>
-                  <th className={classes.th}>UTXO</th>
-                  <th className={classes.th}>Amount</th>
-                  <th className={classes.th}>Name</th>
-                  <th className={classes.th}>Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.from(wallet.BchCoins).map((c) => {
-                  return (
-                    <tr key={c[0]}>
-                      <td className={classes.td}>
-                        {Utils.keyToOutpointString(c[0])}
-                      </td>
-                      <td className={classes.tdNum}>
-                        {c[1].satoshis.div(10 ** 8).toFixed(8)}
-                      </td>
-                      <td className={classes.td}>BCH</td>
-                      <td className={classes.td}>BCH</td>
+          {advanced && (
+            <>
+              <div
+                hidden={
+                  wallet.BchCoins.size === 0 && wallet.SlpCoins.size === 0
+                }
+              >
+                <button onClick={toggleUtxo}>
+                  {showUtxo ? 'Hide' : 'Show'} UTXOs List
+                </button>
+              </div>
+              <br />
+              <div hidden={!showUtxo}>
+                <table className={classes.table}>
+                  <thead>
+                    <tr>
+                      <th className={classes.th}>UTXO</th>
+                      <th className={classes.th}>Amount</th>
+                      <th className={classes.th}>Name</th>
+                      <th className={classes.th}>Type</th>
                     </tr>
-                  );
-                })}
-                {Array.from(wallet.SlpCoins).map(([tokenId, coins]) => {
-                  return Array.from(coins).map((c) => {
-                    if (Big(c[1].amount).toFixed() > 0) {
+                  </thead>
+                  <tbody>
+                    {Array.from(wallet.BchCoins).map((c) => {
                       return (
                         <tr key={c[0]}>
                           <td className={classes.td}>
                             {Utils.keyToOutpointString(c[0])}
                           </td>
                           <td className={classes.tdNum}>
-                            {Tokens.getSlpAmountString(
-                              wallet,
-                              c[1].amount,
-                              tokenId
-                            )}
+                            {c[1].satoshis.div(10 ** 8).toFixed(8)}
                           </td>
-                          <td className={classes.td}>
-                            {Tokens.getName(wallet, tokenId)}
-                          </td>
-                          <td className={classes.td}>
-                            {Tokens.getTypeString(wallet, tokenId)}
-                          </td>
+                          <td className={classes.td}>BCH</td>
+                          <td className={classes.td}>BCH</td>
                         </tr>
                       );
-                    }
-                  });
-                })}
-              </tbody>
-            </table>
-          </div>
+                    })}
+                    {Array.from(wallet.SlpCoins).map(([tokenId, coins]) => {
+                      return Array.from(coins).map((c) => {
+                        if (Big(c[1].amount).toFixed() > 0) {
+                          return (
+                            <tr key={c[0]}>
+                              <td className={classes.td}>
+                                {Utils.keyToOutpointString(c[0])}
+                              </td>
+                              <td className={classes.tdNum}>
+                                {Tokens.getSlpAmountString(
+                                  wallet,
+                                  c[1].amount,
+                                  tokenId
+                                )}
+                              </td>
+                              <td className={classes.td}>
+                                {Tokens.getName(wallet, tokenId)}
+                              </td>
+                              <td className={classes.td}>
+                                {Tokens.getTypeString(wallet, tokenId)}
+                              </td>
+                            </tr>
+                          );
+                        }
+                      });
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </>
       )}
     </>
