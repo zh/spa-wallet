@@ -122,7 +122,6 @@ const metaToObj = (wallet, tokenId) => {
   };
   if (tokenType.startsWith('NFT')) {
     const tm = wallet.TokenMetadata.get(tokenId);
-    console.log('toObj tm: ', tm)
     if (tm.hasV1Nft1Group()) {
       const uri = tm.getV1Nft1Group().getTokenDocumentUrl();
       obj.uri = uri ? Buffer.from(uri).toString('utf8') : '';
