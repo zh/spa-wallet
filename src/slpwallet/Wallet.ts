@@ -2,7 +2,7 @@ import { Big } from "big.js";
 import * as bip32 from "bip32";
 import * as bip39 from "bip39";
 import { Address, PrivateKey, Transaction as Txn } from "bitcore-lib-cash";
-import { TokenMetadata, Transaction } from "grpc-bchrpc-web";
+import { SlpTokenMetadata, Transaction } from "grpc-bchrpc-web";
 
 import { Outpoint, TokenId, WalletStorage } from "./Interfaces";
 import { CacheSet } from "../CacheSet";
@@ -52,7 +52,7 @@ export class Wallet {
   // private bch = new Map<bank, { bchTxi: Map<address, Map<outpoint, Big>>, bchTxo: Map<address, Map<outpoint, Big>> }>();
   // private slp = new Map<bank, Map<tokenId, { slpTxi: Map<address, Map<outpoint, Big>>, slpTxo: Map<address, Map<outpoint, Big>> }>>();
 
-  private tokenMetadata = new Map<TokenId, TokenMetadata>();
+  private tokenMetadata = new Map<TokenId, SlpTokenMetadata>();
 
   constructor(storage: WalletStorage, network: BchdNetwork, update: { ():void } = () =>{}) { // bankPermissions: bank[]) {
     this.storage = storage;
@@ -301,7 +301,6 @@ export class Wallet {
         }
       }
     }
-
     const tmRes = await this.network.GetTokenMetadata([...tokenIds.keys()]);
     tmRes.getTokenMetadataList().forEach(tm => this.tokenMetadata.set(Buffer.from(tm.getTokenId_asU8()).toString("hex"), tm));
   }

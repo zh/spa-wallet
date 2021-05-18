@@ -1,5 +1,5 @@
 import { Big } from 'big.js';
-import { TokenMetadata } from 'grpc-bchrpc-web/pb/bchrpc_pb';
+import { SlpTokenMetadata } from 'grpc-bchrpc-web/pb/bchrpc_pb';
 
 const getTicker = (wallet, tokenId) => {
   if (!tokenId) {
@@ -16,12 +16,12 @@ const getTicker = (wallet, tokenId) => {
     return '?';
   }
   let nameBuf;
-  if (tm.hasType1()) {
-    nameBuf = tm.getType1().getTokenTicker_asU8();
-  } else if (tm.hasNft1Group()) {
-    nameBuf = tm.getNft1Group().getTokenTicker_asU8();
-  } else if (tm.hasNft1Child()) {
-    nameBuf = tm.getNft1Child().getTokenTicker_asU8();
+  if (tm.hasV1Fungible()) {
+    nameBuf = tm.getV1Fungible().getTokenTicker();
+  } else if (tm.hasV1Nft1Group()) {
+    nameBuf = tm.getV1Nft1Group().getTokenTicker();
+  } else if (tm.hasV1Nft1Child()) {
+    nameBuf = tm.getV1Nft1Child().getTokenTicker();
   } else {
     throw Error('unknown token type');
   }
@@ -40,12 +40,12 @@ const getName = (wallet, tokenId) => {
     return '?';
   }
   let nameBuf;
-  if (tm.hasType1()) {
-    nameBuf = tm.getType1().getTokenName_asU8();
-  } else if (tm.hasNft1Group()) {
-    nameBuf = tm.getNft1Group().getTokenName_asU8();
-  } else if (tm.hasNft1Child()) {
-    nameBuf = tm.getNft1Child().getTokenName_asU8();
+  if (tm.hasV1Fungible()) {
+    nameBuf = tm.getV1Fungible().getTokenName();
+  } else if (tm.hasV1Nft1Group()) {
+    nameBuf = tm.getV1Nft1Group().getTokenName();
+  } else if (tm.hasV1Nft1Child()) {
+    nameBuf = tm.getV1Nft1Child().getTokenName();
   } else {
     throw Error('unknown token type');
   }
@@ -58,11 +58,11 @@ const getAmount = (wallet, tokenId, val, display = false) => {
   if (!tm) {
     return Big('0').toFixed();
   }
-  if (tm.hasType1()) {
-    decimals = tm.getType1().getDecimals();
-  } else if (tm.hasNft1Group()) {
-    decimals = tm.getNft1Group().getDecimals();
-  } else if (tm.hasNft1Child()) {
+  if (tm.hasV1Fungible()) {
+    decimals = tm.getV1Fungible().getDecimals();
+  } else if (tm.hasV1Nft1Group()) {
+    decimals = tm.getV1Nft1Group().getDecimals();
+  } else if (tm.hasV1Nft1Child()) {
     decimals = 0;
   } else {
     throw Error('unknown token type');
@@ -79,11 +79,11 @@ const getTypeString = (wallet, tokenId) => {
     return '?';
   }
   switch (tm.getTypeMetadataCase()) {
-    case TokenMetadata.TypeMetadataCase.TYPE1:
+    case SlpTokenMetadata.TypeMetadataCase.V1_FUNGIBLE:
       return 'Token';
-    case TokenMetadata.TypeMetadataCase.NFT1_GROUP:
+    case SlpTokenMetadata.TypeMetadataCase.V1_NFT1_GROUP:
       return 'NFT Group';
-    case TokenMetadata.TypeMetadataCase.NFT1_CHILD:
+    case SlpTokenMetadata.TypeMetadataCase.V1_NFT1_CHILD:
       return 'NFT';
     default:
       return '?';
@@ -99,11 +99,11 @@ const getSlpAmountString = (wallet, amount, tokenId) => {
     return Big('0').toFixed();
   }
   let decimals;
-  if (tm.hasType1()) {
-    decimals = tm.getType1().getDecimals();
-  } else if (tm.hasNft1Group()) {
-    decimals = tm.getNft1Group().getDecimals();
-  } else if (tm.hasNft1Child()) {
+  if (tm.hasV1Fungible()) {
+    decimals = tm.getV1Fungible().getDecimals();
+  } else if (tm.hasV1Nft1Group()) {
+    decimals = tm.getV1Nft1Group().getDecimals();
+  } else if (tm.hasV1Nft1Child()) {
     decimals = 0;
   } else {
     throw Error('unknown token type');
@@ -122,13 +122,14 @@ const metaToObj = (wallet, tokenId) => {
   };
   if (tokenType.startsWith('NFT')) {
     const tm = wallet.TokenMetadata.get(tokenId);
-    if (tm.hasNft1Group()) {
-      const uri = tm.getNft1Group().getTokenDocumentUrl();
+    console.log('toObj tm: ', tm)
+    if (tm.hasV1Nft1Group()) {
+      const uri = tm.getV1Nft1Group().getTokenDocumentUrl();
       obj.uri = uri ? Buffer.from(uri).toString('utf8') : '';
-    } else if (tm.hasNft1Child()) {
-      const uri = tm.getNft1Child().getTokenDocumentUrl();
+    } else if (tm.hasV1Nft1Child()) {
+      const uri = tm.getV1Nft1Child().getTokenDocumentUrl();
       obj.uri = uri ? Buffer.from(uri).toString('utf8') : '';
-      obj.parentId = Buffer.from(tm.getNft1Child().getGroupId()).toString(
+      obj.parentId = Buffer.from(tm.getV1Nft1Child().getGroupId()).toString(
         'hex'
       );
     }

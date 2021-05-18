@@ -1,11 +1,11 @@
-import { BlockNotification, GetAddressTransactionsResponse, GetTokenMetadataResponse,
+import { BlockNotification, GetAddressTransactionsResponse, GetSlpTokenMetadataResponse,
   GetTransactionResponse, GrpcClient, Transaction, TransactionNotification } from "grpc-bchrpc-web";
 import Utils from "../Utils";
 
 export interface Network {
   SendTransaction(txnHex: string, callback?: () => any): Promise<string>;
   GetTransaction(txid: string): Promise<GetTransactionResponse>;
-  GetTokenMetadata(tokenIds: string[]): Promise<GetTokenMetadataResponse>;
+  GetTokenMetadata(tokenIds: string[]): Promise<GetSlpTokenMetadataResponse>;
   GetAddressTransactions(address: string, sinceBlock?: number): Promise<GetAddressTransactionsResponse>;
   Subscribe(addresses: string[], onTransactionNotification: (txn: Transaction) => any): Promise<void>;
 }
