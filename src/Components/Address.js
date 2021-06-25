@@ -67,6 +67,11 @@ const Address = (props) => {
     setShowCopySuccess(true);
   };
 
+  const mnemoToClipboard = (event) => {
+    event.preventDefault();
+    navigator.clipboard.writeText(mnemonic);
+  };
+
   return (
     <>
       <div>
@@ -93,11 +98,9 @@ const Address = (props) => {
           />
           <button onClick={importMnemonic}>Change</button>
           <br />
-          <div hidden={domWallet.Wallet.XPub === null}>
-            Xpub:
-            <br />
-            {domWallet.Wallet.XPub}
-          </div>
+          <button disabled={mnemonic === ''} onClick={mnemoToClipboard}>
+            Copy
+          </button>
         </div>
       </div>
       <hr />

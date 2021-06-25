@@ -353,8 +353,6 @@ const Send = (props) => {
         const validAddress = bchaddr.isValidAddress(address);
         setOutputAddressValue(address);
         setOutputAddressValid(validAddress);
-        console.log(validAddress);
-        // TODO: set slp/bch
       }
     } catch (error) {
       console.log('scan: ', error);

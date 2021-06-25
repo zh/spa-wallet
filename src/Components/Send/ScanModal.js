@@ -10,7 +10,6 @@ import './ScanModal.css';
 
 const ScanModal = () => {
   const dialog = useDialog();
-  const [loading, setLoading] = useState(false);
   const [facing, setFacing] = useState('environment');
   const [address, setAddress] = useState('');
 
@@ -20,14 +19,7 @@ const ScanModal = () => {
 
   const handleScan = async (data) => {
     if (data) {
-      setLoading(true);
-      try {
-        // check for valid SLP/BCH/Legacy address
-        setAddress(data);
-      } catch (error) {
-        console.log(error);
-      }
-      setLoading(false);
+      setAddress(data);
     }
   };
 
@@ -51,7 +43,7 @@ const ScanModal = () => {
           <tbody>
             <tr>
               <th>Address:</th>
-              <td>{loading ? 'loading...' : address}</td>
+              <td>{address}</td>
             </tr>
           </tbody>
         </table>
