@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Confirm, Alert } from 'react-st-modal'; // TODO: replace with material-ui
+import { CustomDialog, Confirm, Alert } from 'react-st-modal'; // TODO: replace with material-ui
 import { makeStyles } from '@material-ui/core/styles';
 import { Big } from 'big.js';
 import bchaddr from 'bchaddrjs-slp';
 import { Address } from 'bitcore-lib-cash';
+import ScanModal from './Send/ScanModal';
 import { DUST_LIMIT, TxBuilder } from '../slpwallet/TxBuilder';
 import Tokens from '../services/tokens.service';
 import TransactionIO from './Send/TransactionsIO';
@@ -342,6 +343,24 @@ const Send = (props) => {
     updateFunc();
   };
 
+  const handleScan = async () => {
+    try {
+      const address = await CustomDialog(<ScanModal />, {
+        title: 'Scan QR code',
+        showCloseIcon: true,
+      });
+      if (address) {
+        const validAddress = bchaddr.isValidAddress(address);
+        setOutputAddressValue(address);
+        setOutputAddressValid(validAddress);
+        console.log(validAddress);
+        // TODO: set slp/bch
+      }
+    } catch (error) {
+      console.log('scan: ', error);
+    }
+  };
+
   return (
     <>
       <div>
@@ -357,6 +376,7 @@ const Send = (props) => {
           }
           onChange={updateOutputAddress}
         ></input>
+        <button onClick={() => handleScan()}>QR</button>
         <br />
         <label htmlFor="coin">Coin: </label>
         <select

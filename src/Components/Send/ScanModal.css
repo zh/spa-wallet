@@ -1,0 +1,38 @@
+.qr-container{
+  text-align: center;
+}
+
+.qr-scanner {
+  width: 70%;
+  height: auto;
+  margin: 0 auto;
+  padding: 10px;
+  position: relative;
+}
+
+.receiver-name {
+  width: 100%;
+}
+
+.change-button {
+  margin-bottom: 2em;
+  margin-top: 2em;
+  margin-left: 1em;
+}
+
+#qr-result {
+  border-collapse: collapse;
+  border: 0px;
+  margin-left: auto;
+  margin-right: auto;
+  border-spacing: 1px;
+}
+
+#qr-result th {
+  padding-right: 10px;
+  text-align: right;
+}
+
+#qr-result tr {
+  text-align: left;
+}

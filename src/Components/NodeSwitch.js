@@ -5,6 +5,7 @@ const publicBchdNodes = [
   'bchd-mainnet.electroncash.de',
   'bchd.imaginary.cash/proxy',
   'bchd.greyh.at:8335',
+  'bchd3.prompt.cash:8335',
   'localhost:8335',
 ];
 
