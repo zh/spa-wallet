@@ -214,22 +214,21 @@ export class Wallet {
   }
 
   public GetBchBalance(): Big {
-    const inputAmt = Array.from(this.bchTxi!).reduce((p, c) => p.add(c[1].satoshis), Big(0));
-    return Array.from(this.bchTxo!).reduce((p, c) => p.add(c[1].satoshis), Big(0)).sub(inputAmt);
+    return Array.from(this.BchCoins).reduce((p, c) => p.add(c[1].satoshis), Big(0));
   }
 
   public GetSlpBalances(): Map<TokenId, Big> {
-    const slpBals = new Map<TokenId, Big>();
-    Array.from(this.slpTxi!).forEach((coins) => {
-      slpBals.set(coins[0], Array.from(coins[1]).reduce((p, c) => p.add(c[1].amount), Big(0)));
+    const slpBalances = new Map<TokenId, Big>();
+
+    Array.from(this.SlpCoins).map(([tokenId, coins]) => {
+      Array.from(coins).map((c) => {
+        if (c[1].amount > Big(0)) {
+          let bal = slpBalances.get(tokenId);
+          slpBalances.set(tokenId, (bal || Big(0) ).add(c[1].amount));
+        }
+      });
     });
-    Array.from(this.slpTxo!).forEach((coins) => {
-      let bal = slpBals.get(coins[0])!;
-      if (!bal) { bal = Big(0); }
-      let outs = Array.from(coins[1]).reduce((p, c) => p.add(c[1].amount), Big(0));
-      slpBals.set(coins[0], outs.sub(bal));
-    });
-    return slpBals;
+    return slpBalances;
   }
 
   private updateParent = () => {
