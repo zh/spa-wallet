@@ -111,7 +111,7 @@ export class TxBuilder {
 
   public async SignTransaction(getKeys: () => PrivateKeys|Promise<PrivateKeys>): Promise<SignedTxInfo> {
     let pk = await getKeys();
-    this.txn.sign(pk);
+    this.txn.sign(pk,undefined,"schnorr");
     const txnHex = this.txn.serialize();
     let fee = this.txn.inputAmount - this.txn.outputAmount;
     return { txnHex, fee, sendAmount: this.txn.outputAmount };

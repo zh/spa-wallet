@@ -10,7 +10,8 @@
     "eject": "react-scripts eject",
     "postinstall": "patch-package",
     "predeploy": "yarn run build",
-    "deploy": "gh-pages -f -b gh_pages -d build"
+    "deploy": "gh-pages -f -b gh_pages -d build",
+    "surge": "cp build/index.html build/200.html && surge ./build"
   },
   "eslintConfig": {
     "extends": [
@@ -60,6 +61,7 @@
   },
   "dependencies": {
     "grpc-bchrpc-web": "^0.15.1",
-    "react-qr-reader": "^2.2.1"
+    "react-qr-reader": "^2.2.1",
+    "surge": "^0.23.0"
   }
 }

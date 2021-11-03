@@ -307,7 +307,6 @@ const Send = (props) => {
       const { txnHex, fee, sendAmount } = await currentTxn.SignTransaction(
         () => wallet.PrivateKey
       );
-      console.log(txnHex);
       const ok = await Confirm(
         `${sendAmount} satoshis with fee: ${fee} satoshis?`,
         'Sending transaction'
