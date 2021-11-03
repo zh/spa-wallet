@@ -1,6 +1,9 @@
 {
   "short_name": "SPA Wallet",
   "name": "Single Page Application BCH Wallet",
+  "description": "Using gRPC for working with BCH blockchain nodes",
+  "homepage_url": "https://w.surge.sh",
+  "providedBy": { "name": "ZHware Co.", "url": "https://zhware.net/" },
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +23,8 @@
   ],
   "start_url": ".",
   "display": "standalone",
+  "orientation": "portrait",
   "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "skylink": "AQDFVs1YvIWEpbQXl8iiLgP6m7vdb7jWLDbDA05Qb6oWzQ"
 }

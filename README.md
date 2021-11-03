@@ -1,5 +1,7 @@
 # Single Page Bitcoin Cash & SLP Web Wallet
 
+[![Add to Homescreen](https://img.shields.io/badge/Skynet-Add%20To%20Homescreen-00c65e?logo=skynet&labelColor=0d0d0d)](https://homescreen.hns.siasky.net/#/skylink/AQDFVs1YvIWEpbQXl8iiLgP6m7vdb7jWLDbDA05Qb6oWzQ)
+
 The project started as a fork of James Cramer's [bitcore-lib-fun](https://github.com/jcramer/bitcore-lib-fun) project. Changes from the original:
 
 - Code renewal: using [Reack hooks](https://reactjs.org/docs/hooks-intro.html) for keeping state
