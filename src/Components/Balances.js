@@ -66,8 +66,8 @@ const Balances = (props) => {
               <tr>
                 <th className={classes.th}>ticker</th>
                 <th className={classes.th}>name</th>
-                <th className={classes.th}>amount</th>
-                <th className={classes.th}>type</th>
+                <th className={classes.th}>amount (bch)</th>
+                <th className={classes.th}>details</th>
               </tr>
             </thead>
             <tbody>
@@ -80,7 +80,10 @@ const Balances = (props) => {
                     .div(10 ** 8)
                     .toFixed(8)}
                 </td>
-                <td className={classes.td}>&nbsp;</td>
+                <td className={classes.tdNum}>
+                  {wallet
+                    .GetBchBalance().toFixed()}
+                </td>
               </tr>
               {Array.from(wallet.GetSlpBalances()).map((b) => {
                 if (Big(b[1]).toFixed() > 0) {
