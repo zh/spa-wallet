@@ -1,4 +1,3 @@
-/* global localStorage */
 import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { isValidBCHAddress, isValidAmount } from './utils/validation'
@@ -12,8 +11,8 @@ const SATS_PER_BCH = 100000000
 const DUST_LIMIT = 0.00000546
 
 const BCH_CONFIG = {
-  interface: 'rest-api',
-  restURL: 'http://192.168.0.17:5942/v6'
+  interface: 'consumer-api',
+  restURL: 'https://free-bch.fullstack.cash'
 }
 
 const shortify = (address) => {
@@ -27,8 +26,9 @@ const BCHWallet = () => {
   const [wallet, setWallet] = useState(null)
   const [balance, setBalance] = useState(null)
   const [initError, setInitError] = useState(null)
-  const [sendForm, setSendForm] = useState({ recipient: '', amount: 0 })
+  const [sendForm, setSendForm] = useState({ recipient: '', amount: '' })
   const [sendStatus, setSendStatus] = useState({ isSending: false, txId: null, error: null })
+  const [refreshing, setRefreshing] = useState(false)
   const { message: copyMsg, copy } = useCopyFeedback()
 
   const cashAddress = wallet?.walletInfo?.cashAddress
@@ -59,7 +59,10 @@ const BCHWallet = () => {
 
   const handleRefresh = () => {
     setSendStatus({ isSending: false, txId: null, error: null })
-    wallet.getBalance().then(setBalance)
+    setRefreshing(true)
+    wallet.getBalance()
+      .then(setBalance)
+      .finally(() => setRefreshing(false))
   }
 
   const handleSend = async (e) => {
@@ -90,12 +93,12 @@ const BCHWallet = () => {
 
       const result = await wallet.send(receivers)
 
-      setSendForm({ recipient: '', amount: 0 })
+      setSendForm({ recipient: '', amount: '' })
       setSendStatus({ isSending: false, txId: result, error: null })
       setBalance(await wallet.getBalance())
       setTimeout(() => {
         setSendStatus(prev => ({ ...prev, txId: null }))
-      }, 20000)
+      }, 10000)
     } catch (err) {
       const { message } = handleError(err, 'send_transaction')
       setSendStatus({ isSending: false, txId: null, error: message })
@@ -105,33 +108,24 @@ const BCHWallet = () => {
     }
   }
 
-  const renderMsg = () => {
-    let className = 'qr-code-instruction'
-    if (copyMsg === 'Copied!') className += ' copy-msg-success'
-    else if (copyMsg.startsWith('Failed')) className += ' copy-msg-error'
-    return <div className={className}>{copyMsg}</div>
-  }
-
-  const renderAddress = () => (
-    <div className='container address-container'>
-      <div className='qr-code'>
-        <QRCodeSVG
-          value={cashAddress}
-          size={128}
-          onClick={() => copy(cashAddress)}
-        />
+  const renderAddress = () => {
+    const isFeedback = copyMsg === 'Copied!' || copyMsg.startsWith('Failed')
+    const feedbackClass = copyMsg === 'Copied!'
+      ? 'address copy-msg-success'
+      : copyMsg.startsWith('Failed')
+        ? 'address copy-msg-error'
+        : 'address'
+    return (
+      <div className='container address-container'>
+        <div className='qr-code' onClick={() => copy(cashAddress)}>
+          <QRCodeSVG value={cashAddress} size={128} />
+        </div>
+        <div className={feedbackClass} onClick={() => copy(cashAddress)} style={{ cursor: 'pointer' }}>
+          {isFeedback ? copyMsg : shortify(cashAddress)}
+        </div>
       </div>
-      {renderMsg()}
-      <div className='address wallet-address-long'>{cashAddress}</div>
-      <div className='address wallet-address-short'>{shortify(cashAddress)}</div>
-    </div>
-  )
-
-  const renderBalance = () => (
-    <div className='container balance-container'>
-      <p><strong>Balance</strong> {(balance / SATS_PER_BCH).toFixed(8)} BCH</p>
-    </div>
-  )
+    )
+  }
 
   const renderSend = () => (
     <div className='container sendbch-container'>
@@ -190,12 +184,12 @@ const BCHWallet = () => {
           {showMnemonic ? 'Hide' : 'Show'} Mnemonic
         </button>
         {showMnemonic && (
-          <span
+          <div
             className='qr-code-instruction mnemonic-text'
             onClick={() => copy(storedMnemonic || '')}
           >
             {storedMnemonic || ''}
-          </span>
+          </div>
         )}
       </div>
     )
@@ -219,15 +213,14 @@ const BCHWallet = () => {
 
   return (
     <div className='wallet-container'>
-      <h3>BCH wallet <button className='refresh-button' onClick={handleRefresh}>Refresh</button></h3>
+      <div className='container balance-container'>
+        <p>{parseFloat((balance / SATS_PER_BCH).toFixed(8))} BCH</p>
+        <button className='refresh-button' onClick={handleRefresh} disabled={refreshing}>
+          {refreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
       {renderAddress()}
-      {renderBalance()}
-      {balance > 0 && (
-        <>
-          <h3>Send BCH</h3>
-          {renderSend()}
-        </>
-      )}
+      {balance > 0 && renderSend()}
       {renderMnemonic()}
     </div>
   )

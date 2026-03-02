@@ -11,7 +11,6 @@
   --bg-surface: #fff;
   --text: #333;
   --disabled: gray;
-  --info: blue;
 }
 
 /* Global resets */
@@ -82,12 +81,9 @@ button:disabled {
   text-align: center;
 }
 
-.wallet-address-long {
-  display: block;
-}
-
-.wallet-address-short {
-  display: none;
+.qr-code {
+  padding: 20px;
+  cursor: pointer;
 }
 
 .qr-code-instruction {
@@ -107,6 +103,7 @@ button:disabled {
 /* Balance */
 .balance-container {
   text-align: center;
+  font-size: 1.4em;
 }
 
 /* Transaction feedback */
@@ -140,7 +137,6 @@ button:disabled {
 }
 
 .send-button {
-  background-color: var(--success);
   margin: 0 auto;
   display: block;
 }
@@ -162,7 +158,6 @@ button:disabled {
 .toggle-details-button {
   margin-top: 10px;
   padding: 5px 10px;
-  background-color: var(--info);
 }
 
 .mnemonic-text {
@@ -171,14 +166,6 @@ button:disabled {
 
 /* Responsive */
 @media (max-width: 600px) {
-  .wallet-address-long {
-    display: none;
-  }
-
-  .wallet-address-short {
-    display: block;
-  }
-
   input {
     width: 90%;
   }
