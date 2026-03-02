@@ -164,6 +164,73 @@ button:disabled {
   padding-left: 5px;
 }
 
+/* Server selector */
+.server-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.server-select {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.connect-button {
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+/* Info section */
+.info-details {
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.info-row {
+  padding: 5px;
+  cursor: pointer;
+  word-break: break-all;
+}
+
+/* Mnemonic editor */
+.mnemonic-edit {
+  margin-top: 8px;
+}
+
+.mnemonic-input {
+  width: 100%;
+  padding: 5px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.mnemonic-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.mnemonic-actions button {
+  padding: 3px 10px;
+  font-size: 12px;
+}
+
+.mnemonic-actions .reset-button {
+  background-color: var(--error);
+}
+
+.mnemonic-actions .reset-button:hover {
+  background-color: #cc0000;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   input {

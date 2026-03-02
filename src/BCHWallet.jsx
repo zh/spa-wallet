@@ -10,10 +10,14 @@ const BchWallet = window.SlpWallet?.default || window.SlpWallet
 const SATS_PER_BCH = 100000000
 const DUST_LIMIT = 0.00000546
 
-const BCH_CONFIG = {
-  interface: 'consumer-api',
-  restURL: 'https://free-bch.fullstack.cash'
-}
+const SERVERS = [
+  { label: 'FullStack.cash (Free)', interface: 'consumer-api', restURL: 'https://free-bch.fullstack.cash' },
+  { label: 'BCH Consumer (Free)', interface: 'consumer-api', restURL: 'https://dev-consumer.psfoundation.info' },
+  { label: 'Local Dev', interface: 'rest-api', restURL: 'http://bch_server:5942/v6' }
+]
+
+const DEFAULT_SERVER = SERVERS[0]
+const STORAGE_KEY_SERVER = 'BCH_SERVER'
 
 const shortify = (address) => {
   const parts = address.split(':')
@@ -22,40 +26,65 @@ const shortify = (address) => {
 }
 
 const BCHWallet = () => {
-  const [showMnemonic, setShowMnemonic] = useState(false)
+  const [showInfo, setShowInfo] = useState(false)
   const [wallet, setWallet] = useState(null)
   const [balance, setBalance] = useState(null)
   const [initError, setInitError] = useState(null)
   const [sendForm, setSendForm] = useState({ recipient: '', amount: '' })
   const [sendStatus, setSendStatus] = useState({ isSending: false, txId: null, error: null })
   const [refreshing, setRefreshing] = useState(false)
+  const [serverConfig, setServerConfig] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_SERVER)
+    return saved ? JSON.parse(saved) : DEFAULT_SERVER
+  })
+  const [connecting, setConnecting] = useState(false)
+  const [mnemonicInput, setMnemonicInput] = useState(
+    () => localStorage.getItem('BCH_MNEMONIC') || ''
+  )
   const { message: copyMsg, copy } = useCopyFeedback()
 
   const cashAddress = wallet?.walletInfo?.cashAddress
 
-  useEffect(() => {
-    const initWallet = async () => {
-      const storedMnemonic = localStorage.getItem('BCH_MNEMONIC')
-      const bchWallet = new BchWallet(storedMnemonic || undefined, BCH_CONFIG)
-
-      await bchWallet.walletInfoPromise
-      await bchWallet.initialize()
-
-      if (!storedMnemonic) {
-        localStorage.setItem('BCH_MNEMONIC', bchWallet.walletInfo.mnemonic)
-      }
-
-      setWallet(bchWallet)
-      bchWallet.getBalance().then(setBalance)
+  const connectWallet = async (config) => {
+    const storedMnemonic = localStorage.getItem('BCH_MNEMONIC')
+    const bchWallet = new BchWallet(storedMnemonic || undefined, {
+      interface: config.interface,
+      restURL: config.restURL
+    })
+    await bchWallet.walletInfoPromise
+    await bchWallet.initialize()
+    if (!storedMnemonic) {
+      localStorage.setItem('BCH_MNEMONIC', bchWallet.walletInfo.mnemonic)
+      setMnemonicInput(bchWallet.walletInfo.mnemonic)
     }
+    setWallet(bchWallet)
+    bchWallet.getBalance().then(setBalance)
+  }
 
-    initWallet().catch(err => {
+  useEffect(() => {
+    connectWallet(serverConfig).catch(err => {
       const { message } = handleError(err, 'init')
       setInitError(message)
     })
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useBalancePoller(wallet, setBalance, 10000)
+
+  const handleConnect = async () => {
+    setConnecting(true)
+    setInitError(null)
+    setBalance(null)
+    setWallet(null)
+    try {
+      await connectWallet(serverConfig)
+      localStorage.setItem(STORAGE_KEY_SERVER, JSON.stringify(serverConfig))
+    } catch (err) {
+      const { message } = handleError(err, 'init')
+      setInitError(message)
+    } finally {
+      setConnecting(false)
+    }
+  }
 
   const handleRefresh = () => {
     setSendStatus({ isSending: false, txId: null, error: null })
@@ -107,6 +136,44 @@ const BCHWallet = () => {
       }, 5000)
     }
   }
+
+  const handleSaveMnemonic = async () => {
+    const trimmed = mnemonicInput.trim()
+    if (!trimmed) return
+    localStorage.setItem('BCH_MNEMONIC', trimmed)
+    await handleConnect()
+  }
+
+  const handleResetMnemonic = async () => {
+    if (!window.confirm('This will discard the current mnemonic and generate a new wallet. Continue?')) return
+    localStorage.removeItem('BCH_MNEMONIC')
+    setMnemonicInput('')
+    await handleConnect()
+  }
+
+  const renderServer = () => (
+    <div className='container server-container'>
+      <select
+        className='server-select'
+        value={serverConfig.restURL}
+        onChange={(e) => {
+          const server = SERVERS.find(s => s.restURL === e.target.value)
+          setServerConfig(server)
+        }}
+      >
+        {SERVERS.map(s => (
+          <option key={s.restURL} value={s.restURL}>{s.label}</option>
+        ))}
+      </select>
+      <button
+        className='connect-button'
+        onClick={handleConnect}
+        disabled={connecting}
+      >
+        {connecting ? 'Connecting...' : 'Connect'}
+      </button>
+    </div>
+  )
 
   const renderAddress = () => {
     const isFeedback = copyMsg === 'Copied!' || copyMsg.startsWith('Failed')
@@ -173,55 +240,72 @@ const BCHWallet = () => {
     </div>
   )
 
-  const renderMnemonic = () => {
-    const storedMnemonic = localStorage.getItem('BCH_MNEMONIC')
+  const renderInfo = () => {
+    const legacyAddress = wallet?.walletInfo?.legacyAddress || ''
+    const privateKey = wallet?.walletInfo?.privateKey || ''
+    const hdPath = wallet?.walletInfo?.hdPath || "m/44'/245'/0'/0/0"
     return (
       <div className='container mnemonic-container'>
         <button
           className='toggle-details-button'
-          onClick={() => setShowMnemonic(!showMnemonic)}
+          onClick={() => setShowInfo(!showInfo)}
         >
-          {showMnemonic ? 'Hide' : 'Show'} Mnemonic
+          {showInfo ? 'Hide Info' : 'Info'}
         </button>
-        {showMnemonic && (
-          <div
-            className='qr-code-instruction mnemonic-text'
-            onClick={() => copy(storedMnemonic || '')}
-          >
-            {storedMnemonic || ''}
+        {showInfo && (
+          <div className='info-details'>
+            <div className='info-row' onClick={() => copy(cashAddress)}>
+              <b>Address:</b> {cashAddress}
+            </div>
+            <div className='info-row' onClick={() => copy(legacyAddress)}>
+              <b>Legacy:</b> {legacyAddress}
+            </div>
+            <div className='info-row' onClick={() => copy(privateKey)}>
+              <b>Private Key:</b> {privateKey}
+            </div>
+            <div className='info-row' onClick={() => copy(hdPath)}>
+              <b>HD Path:</b> {hdPath}
+            </div>
+            <div className='mnemonic-edit'>
+              <b>Mnemonic:</b>
+              <textarea
+                className='mnemonic-input'
+                rows={2}
+                value={mnemonicInput}
+                onChange={(e) => setMnemonicInput(e.target.value)}
+              />
+              <div className='mnemonic-actions'>
+                <button type='button' onClick={handleSaveMnemonic}>Save</button>
+                <button type='button' className='reset-button' onClick={handleResetMnemonic}>Reset</button>
+              </div>
+            </div>
           </div>
         )}
       </div>
     )
   }
 
-  if (initError) {
-    return (
-      <div className='wallet-container'>
-        <div className='tx-error'>{initError}</div>
-      </div>
-    )
-  }
-
-  if (!wallet || !cashAddress) {
-    return (
-      <div className='wallet-container'>
-        Loading...
-      </div>
-    )
-  }
-
   return (
     <div className='wallet-container'>
-      <div className='container balance-container'>
-        <p>{parseFloat((balance / SATS_PER_BCH).toFixed(8))} BCH</p>
-        <button className='refresh-button' onClick={handleRefresh} disabled={refreshing}>
-          {refreshing ? 'Refreshing...' : 'Refresh'}
-        </button>
-      </div>
-      {renderAddress()}
-      {balance > 0 && renderSend()}
-      {renderMnemonic()}
+      {renderServer()}
+      {initError && <div className='tx-error'>{initError}</div>}
+      {!wallet || !cashAddress
+        ? (
+            connecting ? null : <div className='container'>Loading...</div>
+          )
+        : (
+          <>
+            <div className='container balance-container'>
+              <p>{parseFloat((balance / SATS_PER_BCH).toFixed(8))} BCH</p>
+              <button className='refresh-button' onClick={handleRefresh} disabled={refreshing}>
+                {refreshing ? 'Refreshing...' : 'Refresh'}
+              </button>
+            </div>
+            {renderAddress()}
+            {balance > 0 && renderSend()}
+            {renderInfo()}
+          </>
+          )}
     </div>
   )
 }
