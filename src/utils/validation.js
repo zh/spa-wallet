@@ -1,5 +1,7 @@
 // src/utils/validation.js
 
+import { isValidBchName } from './bch-ns'
+
 /**
  * Validate BCH address format (cashaddr or legacy)
  */
@@ -11,6 +13,14 @@ export const isValidBCHAddress = (address) => {
   const legacyAddressRegex = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/
 
   return cashAddressRegex.test(trimmed) || legacyAddressRegex.test(trimmed)
+}
+
+/**
+ * Validate recipient: either a valid BCH address or a valid .bch name
+ */
+export const isValidRecipient = (input) => {
+  if (!input || typeof input !== 'string') return false
+  return isValidBCHAddress(input) || isValidBchName(input)
 }
 
 /**

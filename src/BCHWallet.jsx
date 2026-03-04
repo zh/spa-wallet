@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { isValidBCHAddress, isValidAmount } from './utils/validation'
+import { isValidBCHAddress, isValidAmount, isValidRecipient } from './utils/validation'
+import { isBchName, resolveName } from './utils/bch-ns'
 import { handleError } from './utils/errorHandler'
 import { useBalancePoller } from './hooks/useBalancePoller'
 import { useCopyFeedback } from './hooks/useCopyFeedback'
@@ -32,6 +33,7 @@ const BCHWallet = () => {
   const [initError, setInitError] = useState(null)
   const [sendForm, setSendForm] = useState({ recipient: '', amount: '' })
   const [sendStatus, setSendStatus] = useState({ isSending: false, txId: null, error: null })
+  const [resolvedAddr, setResolvedAddr] = useState({ address: null, resolving: false, error: null })
   const [refreshing, setRefreshing] = useState(false)
   const [serverConfig, setServerConfig] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY_SERVER)
@@ -70,6 +72,25 @@ const BCHWallet = () => {
 
   useBalancePoller(wallet, setBalance, 10000)
 
+  // Resolve .bch names as the user types
+  useEffect(() => {
+    const input = sendForm.recipient.trim()
+    if (!isBchName(input)) {
+      setResolvedAddr({ address: null, resolving: false, error: null })
+      return
+    }
+    let cancelled = false
+    setResolvedAddr({ address: null, resolving: true, error: null })
+    resolveName(input)
+      .then((data) => {
+        if (!cancelled) setResolvedAddr({ address: data.address, resolving: false, error: null })
+      })
+      .catch((err) => {
+        if (!cancelled) setResolvedAddr({ address: null, resolving: false, error: err.message })
+      })
+    return () => { cancelled = true }
+  }, [sendForm.recipient])
+
   const handleConnect = async () => {
     setConnecting(true)
     setInitError(null)
@@ -99,11 +120,26 @@ const BCHWallet = () => {
     setSendStatus({ isSending: true, txId: null, error: null })
 
     try {
-      const recipient = sendForm.recipient.trim()
+      const recipientInput = sendForm.recipient.trim()
       const amount = sendForm.amount.toString().trim()
 
+      if (!isValidRecipient(recipientInput)) {
+        throw new Error('Invalid recipient address or name')
+      }
+
+      // Resolve .bch name to address
+      let recipient = recipientInput
+      if (isBchName(recipientInput)) {
+        if (resolvedAddr.address) {
+          recipient = resolvedAddr.address
+        } else {
+          const data = await resolveName(recipientInput)
+          recipient = data.address
+        }
+      }
+
       if (!isValidBCHAddress(recipient)) {
-        throw new Error('Invalid recipient address format')
+        throw new Error('Resolved address is invalid')
       }
 
       if (!isValidAmount(amount)) {
@@ -201,11 +237,20 @@ const BCHWallet = () => {
           <input
             type='text'
             className='form-input'
-            placeholder='Recipient Address'
+            placeholder='Address or name (e.g. stoyan.bch)'
             value={sendForm.recipient}
             onChange={(e) => setSendForm({ ...sendForm, recipient: e.target.value })}
             required
           />
+          {resolvedAddr.resolving && (
+            <div className='bchns-resolving'>Resolving name...</div>
+          )}
+          {resolvedAddr.address && (
+            <div className='bchns-resolved'>{resolvedAddr.address}</div>
+          )}
+          {resolvedAddr.error && (
+            <div className='bchns-error'>{resolvedAddr.error}</div>
+          )}
           <input
             type='number'
             className='form-input'
@@ -218,7 +263,7 @@ const BCHWallet = () => {
           <button
             className='send-button'
             type='submit'
-            disabled={sendStatus.isSending || !sendForm.recipient.trim()}
+            disabled={sendStatus.isSending || !sendForm.recipient.trim() || resolvedAddr.resolving}
           >
             {sendStatus.isSending ? 'Sending...' : 'Send'}
           </button>

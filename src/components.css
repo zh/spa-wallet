@@ -231,6 +231,27 @@ button:disabled {
   background-color: #cc0000;
 }
 
+/* BCH Name Service */
+.bchns-resolving {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 2px 0;
+}
+
+.bchns-resolved {
+  font-size: 12px;
+  color: var(--success);
+  padding: 2px 0;
+  word-break: break-all;
+  font-family: monospace;
+}
+
+.bchns-error {
+  font-size: 12px;
+  color: var(--error);
+  padding: 2px 0;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   input {
