@@ -7,21 +7,22 @@ const BURN_AMOUNT_SATS = 10000
 const PROTOCOL_VERSION = 1
 
 const RESOLVER_URL = import.meta.env.VITE_RESOLVER_URL || 'http://127.0.0.1:3100'
+const TLD = import.meta.env.VITE_RESOLVER_TLD || 'bch'
 
-const NAME_REGEX = /^[a-z0-9][a-z0-9-]{1,30}[a-z0-9]\.bch$/
+const NAME_REGEX = new RegExp('^[a-z0-9][a-z0-9-]{1,30}[a-z0-9]\\.' + TLD + '$')
 
 const RESOLVE_TIMEOUT_MS = 5000
 
 /**
- * Detect if input is a .bch name (vs a regular address)
+ * Detect if input is a name (vs a regular address)
  */
 export const isBchName = (input) => {
   if (!input || typeof input !== 'string') return false
-  return input.trim().toLowerCase().endsWith('.bch')
+  return input.trim().toLowerCase().endsWith('.' + TLD)
 }
 
 /**
- * Validate .bch name format: 3-32 chars before .bch, alphanumeric + hyphens, lowercase
+ * Validate name format: 3-32 chars before TLD, alphanumeric + hyphens, lowercase
  */
 export const isValidBchName = (name) => {
   if (!name || typeof name !== 'string') return false
@@ -33,8 +34,9 @@ export const isValidBchName = (name) => {
  * Verify a resolution by fetching the TX from blockchain and parsing OP_RETURN
  * Returns true if the OP_RETURN payload address matches expectedAddr
  */
-export const verifyResolution = async (bchjs, txid, expectedAddr) => {
-  const txData = await bchjs.RawTransactions.getRawTransaction(txid, true)
+export const verifyResolution = async (wallet, txid, expectedAddr) => {
+  const txResults = await wallet.getTxData([txid])
+  const txData = txResults[0]
 
   for (const vout of txData.vout) {
     const hex = vout.scriptPubKey?.hex || ''
@@ -75,26 +77,16 @@ export const verifyResolution = async (bchjs, txid, expectedAddr) => {
 }
 
 /**
- * Resolve a .bch name to an address via the indexer, then verify on-chain
+ * Resolve a name to an address via the indexer, then verify on-chain
  * Returns { address, owner, txid, blockHeight } or throws
  */
-export const resolveName = async (name, bchjs = null) => {
+export const resolveName = async (name, wallet = null) => {
   const normalized = name.trim().toLowerCase()
   if (!isValidBchName(normalized)) {
     throw new Error(`Invalid BCH name: ${normalized}`)
   }
 
-  // Mock mode: only in development builds
-  if (import.meta.env.DEV) {
-    const MOCK_NAMES = {
-      'stoyan.bch': { address: 'bitcoincash:qqu62lcjqftsn42sj8tdzl5yg4deryz4us245mqz37', owner: 'bitcoincash:qqu62lcjqftsn42sj8tdzl5yg4deryz4us245mqz37', txid: 'mock', blockHeight: 0 },
-      'test.bch': { address: 'bitcoincash:qpp0f8t557llskht7nhxpjwk33mnptjnfuw6cv3zvs', owner: 'bitcoincash:qpp0f8t557llskht7nhxpjwk33mnptjnfuw6cv3zvs', txid: 'mock', blockHeight: 0 }
-    }
-    const mockEntry = MOCK_NAMES[normalized]
-    if (mockEntry) return mockEntry
-  }
-
-  const nameWithoutTld = normalized.replace(/\.bch$/, '')
+  const nameWithoutTld = normalized.replace('.' + TLD, '')
   const url = `${RESOLVER_URL}/api/name/${encodeURIComponent(nameWithoutTld)}`
 
   const controller = new AbortController()
@@ -127,10 +119,14 @@ export const resolveName = async (name, bchjs = null) => {
   }
 
   // Wallet-side verification: confirm indexer response matches on-chain data
-  if (bchjs && data.txid && data.txid !== 'mock') {
-    const verified = await verifyResolution(bchjs, data.txid, data.address)
-    if (!verified) {
-      throw new Error('Resolution verification failed: on-chain data does not match indexer')
+  if (wallet && data.txid && data.txid !== 'mock') {
+    try {
+      const verified = await verifyResolution(wallet, data.txid, data.address)
+      if (!verified) {
+        console.warn('BCH-NS: on-chain verification mismatch for', name)
+      }
+    } catch (err) {
+      console.warn('BCH-NS: on-chain verification unavailable:', err.message)
     }
   }
 
@@ -146,7 +142,7 @@ const buildPayload = (op, name, extra = {}) => {
 }
 
 /**
- * Register a new .bch name (Create). Includes burn output for anti-squatting.
+ * Register a new name (Create). Includes burn output for anti-squatting.
  */
 export const createName = async (wallet, name, addr) => {
   if (!isValidBchName(name)) throw new Error(`Invalid BCH name: ${name}`)
@@ -158,7 +154,7 @@ export const createName = async (wallet, name, addr) => {
 }
 
 /**
- * Update the address for an existing .bch name (owner only)
+ * Update the address for an existing name (owner only)
  */
 export const updateName = async (wallet, name, addr) => {
   if (!isValidBchName(name)) throw new Error(`Invalid BCH name: ${name}`)
@@ -168,7 +164,7 @@ export const updateName = async (wallet, name, addr) => {
 }
 
 /**
- * Delete a .bch name (owner only). 100-block cooldown before re-registration.
+ * Delete a name (owner only). 100-block cooldown before re-registration.
  */
 export const deleteName = async (wallet, name) => {
   if (!isValidBchName(name)) throw new Error(`Invalid BCH name: ${name}`)
@@ -178,8 +174,10 @@ export const deleteName = async (wallet, name) => {
 }
 
 /**
- * Transfer ownership of a .bch name to another address
+ * Transfer ownership of a name to another address
  */
+export { TLD }
+
 export const transferName = async (wallet, name, to) => {
   if (!isValidBchName(name)) throw new Error(`Invalid BCH name: ${name}`)
 

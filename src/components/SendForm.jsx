@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { isValidBCHAddress, isValidAmount, isValidRecipient } from '../utils/validation'
-import { isBchName, resolveName } from '../utils/bch-ns'
+import { isBchName, resolveName, TLD } from '../utils/bch-ns'
 import { handleError } from '../utils/errorHandler'
 
 const SATS_PER_BCH = 100000000
@@ -27,7 +27,7 @@ const SendForm = ({ wallet }) => {
 
     let cancelled = false
     debounceRef.current = setTimeout(() => {
-      resolveName(input, wallet?.bchjs)
+      resolveName(input, wallet)
         .then((data) => {
           if (!cancelled) setResolvedAddr({ address: data.address, resolving: false, error: null })
         })
@@ -55,7 +55,7 @@ const SendForm = ({ wallet }) => {
       if (resolvedAddr.address) {
         recipient = resolvedAddr.address
       } else {
-        const data = await resolveName(recipientInput, wallet?.bchjs)
+        const data = await resolveName(recipientInput, wallet)
         recipient = data.address
       }
     }
@@ -122,7 +122,7 @@ const SendForm = ({ wallet }) => {
           <input
             type='text'
             className='form-input'
-            placeholder='Address or name (e.g. stoyan.bch)'
+            placeholder={`Address or name (e.g. stoyan.${TLD})`}
             value={sendForm.recipient}
             onChange={(e) => setSendForm({ ...sendForm, recipient: e.target.value })}
             required
