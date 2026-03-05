@@ -22,7 +22,8 @@ A lightweight Bitcoin Cash web wallet built with React 18 and Vite.
 ### Install
 
 ```bash
-cd jotai_wallet/spa-wallet
+git clone https://github.com/zh/spa-wallet.git
+cd spa-wallet
 npm install
 ```
 
